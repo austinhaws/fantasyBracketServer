@@ -1,22 +1,36 @@
-// BASE SETUP
-// =============================================================================
+const cookieParser = require('cookie-parser')
+const csrf = require('csurf');
+const express = require('express');
 
-// call the packages we need
-var express = require('express');
-var app = express();
-var bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
+var csrfProtection = csrf({ cookie: true })
+var parseForm = bodyParser.urlencoded({ extended: false })
+const app = express();
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
+app.use(cookieParser());
+
+
+// app.get('/form', csrfProtection, function (req, res) {
+// 	// pass the csrfToken to the view
+// 	res.render('send', { csrfToken: req.csrfToken() })
+// });
+//
+// app.post('/process', parseForm, function (req, res) {
+// 	res.send('data is being processed')
+// });
+
+require('./routes')(app);
 
 // set our port
-var port = process.env.PORT || 8080;
+const port = process.env.PORT || 8080;
 
 // MYSQL SETUP
 // =============================================================================
-var mysql = require('mysql');
+const mysql = require('mysql');
 
 const connection = mysql.createConnection({
 	host: "localhost",
@@ -31,19 +45,16 @@ connection.connect(function(err) {
 });
 
 const person = require('./app/models/person');
-person.select(connection, 174989, person => console.log(person));
 
 // ROUTES FOR OUR API
 // =============================================================================
-var router = express.Router();
+const router = express.Router();
 
 // !! order matters !!
 router.use(function(req, res, next) {
-	console.log('Something is happening.');
+	console.log('Something is happening...');
 	next();
 });
-
-router.route('/user/current').get((req, res) => person.select(connection, 174989, person => res.json(person)));
 
 router.get('/', function (req, res) {
 	res.json({message: 'hooray! welcome to our api!'});

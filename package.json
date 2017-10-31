@@ -3,6 +3,9 @@
  "main": "server.js",
  "dependencies": {
   "body-parser": "~1.0.1",
+  "convert-keys": "^1.2.0",
+  "cookie-parser": "^1.4.3",
+  "csurf": "^1.9.0",
   "express": "~4.0.0",
   "mysql": "^2.15.0"
  },

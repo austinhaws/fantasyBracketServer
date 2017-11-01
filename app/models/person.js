@@ -10,6 +10,6 @@ const person = {
 	update: (data, callback) => connection.query('UPDATE person SET ? WHERE uid = ?', [convertKeys.toSnake(data), data.uid], queryResults.updateCallback(callback)),
 };
 
-person.replace = (data, callback) => person.update(data, numUpdated => numUpdated ? callback(numUpdated) : person.insert(data, callback));
+person.replace = (data, callback) => person.update(data, numUpdated => numUpdated ? callback(data) : person.insert(data, callback));
 
 module.exports = person;

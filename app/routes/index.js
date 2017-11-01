@@ -1,5 +1,6 @@
 const fs = require('fs');
 
+// https://stackoverflow.com/questions/6059246/how-to-include-route-handlers-in-multiple-files-in-express
 module.exports = function (app) {
 	fs.readdirSync(__dirname).forEach(function (file) {
 		if (file === "index.js") return;

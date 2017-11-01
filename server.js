@@ -14,37 +14,18 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 
-// app.get('/form', csrfProtection, function (req, res) {
-// 	// pass the csrfToken to the view
-// 	res.render('send', { csrfToken: req.csrfToken() })
-// });
-//
-// app.post('/process', parseForm, function (req, res) {
-// 	res.send('data is being processed')
-// });
+app.get('/form', csrfProtection, function (req, res) {
+	// pass the csrfToken to the view
+	res.render('send', { csrfToken: req.csrfToken() })
+});
 
-require('./routes')(app);
+app.post('/process', parseForm, function (req, res) {
+	res.send('data is being processed')
+});
+
 
 // set our port
 const port = process.env.PORT || 8080;
-
-// MYSQL SETUP
-// =============================================================================
-const mysql = require('mysql');
-
-const connection = mysql.createConnection({
-	host: "localhost",
-	database: 'fantasy',
-	user: "root",
-	password: "root"
-});
-
-connection.connect(function(err) {
-	if (err) throw err;
-	console.log("Mysql connected!");
-});
-
-const person = require('./app/models/person');
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -60,7 +41,7 @@ router.get('/', function (req, res) {
 	res.json({message: 'hooray! welcome to our api!'});
 });
 
-// more routes for our API will happen here
+require('./app/routes')(router);
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api

@@ -1,53 +1,15 @@
 const cookieParser = require('cookie-parser')
-const csrf = require('csurf');
 const express = require('express');
-
 const bodyParser = require('body-parser');
-var csrfProtection = csrf({ cookie: true })
-var parseForm = bodyParser.urlencoded({ extended: false })
 const app = express();
 
-// configure app to use bodyParser()
-// this will let us get the data from a POST
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-
-app.get('/form', csrfProtection, function (req, res) {
-	// pass the csrfToken to the view
-	res.render('send', { csrfToken: req.csrfToken() })
-});
-
-app.post('/process', parseForm, function (req, res) {
-	res.send('data is being processed')
-});
-
-
-// set our port
-const port = process.env.PORT || 8080;
-
-// ROUTES FOR OUR API
-// =============================================================================
 const router = express.Router();
-
-// !! order matters !!
-router.use(function(req, res, next) {
-	console.log('Something is happening...');
-	next();
-});
-
-router.get('/', function (req, res) {
-	res.json({message: 'hooray! welcome to our api!'});
-});
-
 require('./app/routes')(router);
-
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
 app.use('/api', router);
 
-// START THE SERVER
-// =============================================================================
+const port = process.env.PORT || 8080;
 app.listen(port);
-console.log('Magic happens on port ' + port);

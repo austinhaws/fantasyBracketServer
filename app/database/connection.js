@@ -7,9 +7,10 @@ const connection = mysql.createConnection({
 	password: "root"
 });
 
-connection.connect(function(err) {
-	if (err) throw err;
-	console.log("Mysql connected!");
+connection.connect(err => {
+	if (err) {
+		throw err;
+	}
 });
 
 module.exports = connection;

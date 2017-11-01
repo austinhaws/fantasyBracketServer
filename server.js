@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const app = express();
 const helmet = require('helmet');
 const session = require('express-session');
-const authentication = require('./app/security/authentication');
+const authentication = require('./app/system/security/authentication');
 
 app.use(helmet());
 app.use(session({secret: 'fantasybracketrockslikecasey!', resave: true, saveUninitialized: true,}));

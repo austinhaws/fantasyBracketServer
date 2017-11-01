@@ -1,4 +1,4 @@
-const Person = require('../models/person');
+const Person = require('../../models/person');
 
 /*
 	https://github.com/expressjs/session

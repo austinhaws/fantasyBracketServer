@@ -1,5 +1,5 @@
-const connection = require('../database/connection.js');
-const queryResults = require('../database/queryResults');
+const connection = require('../system/database/connection.js');
+const queryResults = require('../system/database/queryResults');
 const convertKeys = require('convert-keys');
 
 const person = {

@@ -4,4 +4,5 @@ const fs = require('fs');
 // require all files in this folder
 module.exports = {
 	success: res => res.json({success: 'success'}),
+	error: (res, error) => res.json({error: error}),
 };

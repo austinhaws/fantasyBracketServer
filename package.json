@@ -6,6 +6,7 @@
   "convert-keys": "^1.2.0",
   "cookie-parser": "^1.4.3",
   "express": "~4.0.0",
+  "helmet": "^3.9.0",
   "mysql": "^2.15.0"
  },
  "scripts": {

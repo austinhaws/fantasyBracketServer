@@ -2,7 +2,9 @@ const cookieParser = require('cookie-parser')
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
+const helmet = require('helmet')
 
+app.use(helmet())
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());

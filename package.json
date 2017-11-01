@@ -8,7 +8,7 @@
   "express": "~4.0.0",
   "express-session": "^1.15.6",
   "helmet": "^3.9.0",
-  "mysql": "^2.15.0",
+  "mysql": "^2.15.0"
  },
  "scripts": {
   "run": "node server.js",

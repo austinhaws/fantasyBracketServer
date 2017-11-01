@@ -23,13 +23,10 @@ const queryResults = {
 		}
 	},
 
-	insertCallback: (callback, idField) => (err, results, fields) => {
+	insertCallback: callback => (err, results, fields) => {
 		queryResults.checkError(err);
 		if (callback) {
-			if (results.affectedRows === 1) {
-				results[0][idField] = results.insertId;
-			}
-			callback(results);
+			callback(results.insertId);
 		}
 	},
 };

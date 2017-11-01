@@ -19,16 +19,18 @@ const authentication = {
 		// if user has changed, get new information
 		if (!currentUser || currentUser.uid !== uidHeader) {
 			req.session.user = undefined;
-			Person.replace({
-				uid: uidHeader,
-				firstName: req.header('firstname'),
-				lastName: req.header('lastname'),
-				email: req.header('email'),
-			}, person => req.session.user = person);
+			Person.select(uidHeader, person => person ? callback(req.session.user = person[0]) : Person.insert(
+				{
+					uid: uidHeader,
+					firstName: req.header('firstname'),
+					lastName: req.header('lastname'),
+					email: req.header('email'),
+				}, person => callback(req.session.user = person)
+			));
+		} else {
+			callback(req.session.user);
 		}
 
-		// tell caller they are good to go
-		callback(req.session.user);
 	},
 };
 

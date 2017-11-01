@@ -1,15 +1,10 @@
-const connection = require('../system/database/connection.js');
-const queryResults = require('../system/database/queryResults');
+const crudModule = require('../system/database/crudModel');
 const convertKeys = require('convert-keys');
+const queryResults = require('../system/database/queryResults');
 
-const person = {
-	select: (uid, callback) => connection.query('SELECT * FROM person WHERE uid = ?', [uid], queryResults.selectCallback(callback)),
+const crud = crudModule('person', 'uid');
 
-	insert: (data, callback) => connection.query('INSERT INTO person SET ?', convertKeys.toSnake(data), queryResults.insertCallback(callback)),
+// use `uid` to lookup people from header, but `person_pk` is the actual id column
+crud.insert = (data, callback) => connection.query(`INSERT INTO person SET ?`, convertKeys.toSnake(data), queryResults.insertCallback(callback, 'personPk'));
 
-	update: (data, callback) => connection.query('UPDATE person SET ? WHERE uid = ?', [convertKeys.toSnake(data), data.uid], queryResults.updateCallback(callback)),
-};
-
-person.replace = (data, callback) => person.update(data, numUpdated => numUpdated ? callback(data) : person.insert(data, callback));
-
-module.exports = person;
+module.exports = crud;

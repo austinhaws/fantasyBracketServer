@@ -1,13 +1,19 @@
 const connection = require('../database/connection.js');
+const queryResults = require('../database/queryResults');
+const convertKeys = require('convert-keys');
 
-module.exports = {
-	select: (connection, uid, callback) =>connection.query('SELECT * FROM person WHERE uid = ?', [uid], (err, results, fields) => callback(results[0])),
+const person = {
+	select: (uid, callback) => connection.query('SELECT * FROM person WHERE uid = ?', [uid], queryResults.selectCallback(callback)),
 
-	insert: (connection, person) =>connection.query('INSERT INTO person SET ?', person),
+	insert: (data, callback) => connection.query('INSERT INTO person SET ?', convertKeys.toSnake(data), queryResults.insertCallback(callback)),
 
-	update: (connection, uid, person, callback) => {
-		console.log('uid', uid);
-		console.log('person', person);
-		connection.query('UPDATE person SET ? WHERE uid = ?', [person, uid], callback)
-	},
+	update: (data, callback) => connection.query('UPDATE person SET ? WHERE uid = ?', [convertKeys.toSnake(data), data.uid], queryResults.updateCallback(callback)),
 };
+
+person.replace = (data, callback) => person.update(data, numUpdated => {
+	if (!numUpdated) {
+		person.insert(data, callback);
+	}
+});
+
+module.exports = person;

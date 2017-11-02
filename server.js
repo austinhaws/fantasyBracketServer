@@ -5,6 +5,7 @@ const app = express();
 const helmet = require('helmet');
 const session = require('express-session');
 const authentication = require('./app/system/security/authentication');
+const csrf = require('./app/system/security/csrf');
 
 app.use(helmet());
 app.use(session({secret: 'fantasybracketrockslikecasey!', resave: true, saveUninitialized: true,}));
@@ -14,9 +15,16 @@ app.use(cookieParser());
 
 const router = express.Router();
 
+// require authentication on all routes
 router.use((req, res, next) => authentication.currentUser(req, () => next()));
 
+// require csrf on posts
+app.post('/*', function (req, res, next) {
+	csrf.checkCsrf(req);
+	next();
+});
 
+// load all routes
 require('./app/routes')(router);
 app.use('/api', router);
 

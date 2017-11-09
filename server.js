@@ -6,12 +6,18 @@ const helmet = require('helmet');
 const session = require('express-session');
 const authentication = require('./app/system/security/authentication');
 const csrf = require('./app/system/security/csrf');
+const cors = require('cors');
 
 app.use(helmet());
 app.use(session({secret: 'fantasybracketrockslikecasey!', resave: true, saveUninitialized: true,}));
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 app.use(cookieParser());
+
+
+// use it before all route definitions
+app.use(cors({origin: '*'}));
+
 
 const router = express.Router();
 

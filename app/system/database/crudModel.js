@@ -35,12 +35,12 @@ function mongoErrorHandler(callback) {
  * create an id object for the data
  *
  * @param idField name of the field that is the id for the data, or falsey for _id
- * @param data the data object containing the data (including the id field)
+ * @param data the data object containing the data (including the id field)   -- OR --  the actual id value
  * @return {{}} new object with id in it
  */
 function createIdObject(idField, data) {
 	const field = idField ? idField : '_id';
-	return {[field]: data[field]};
+	return {[field]: (data instanceof Object) ? data[field] : data};
 }
 
 module.exports = (collection, idField) => {
@@ -48,7 +48,7 @@ module.exports = (collection, idField) => {
 	const model = {
 		insert: (record, callback) => mongo.db.collection(collection).insertOne(record, mongoErrorHandler(callback)),
 
-		select: (query, callback) => mongo.db.collection(collection).find(query).toArray(mongoErrorHandler(callback)),
+		select: (idFieldValue, callback) => mongo.db.collection(collection).find(createIdObject(idField, idFieldValue)).toArray(mongoErrorHandler(callback)),
 
 		update: (data, callback) => mongo.db.collection(collection).updateOne(createIdObject(idField, data), data, mongoErrorHandler(callback)),
 
@@ -57,7 +57,7 @@ module.exports = (collection, idField) => {
 
 	// search for the user, update if exists, insert if not; had tried checking update count, but then auto created _id field is not included
 	model.replace = (data, callback) =>
-		model.select(createIdObject(idField, data), user => {
+		model.select(data, user => {
 			if (user && user.length) {
 				// put id in to record (whole reason for doing "select" at the front in the first place instead of update/count
 				model.update(data, res => callback(Object.assign({_id: user[0]._id}, data)));

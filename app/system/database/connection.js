@@ -1,16 +1,12 @@
-const mysql = require('mysql');
+const MongoClient = require('mongodb').MongoClient;
+const url = "mongodb://localhost:27017/fantasy";
 
-const connection = mysql.createConnection({
-	host: "localhost",
-	database: 'fantasy',
-	user: "root",
-	password: "root"
+const mongo = {db: false};
+
+MongoClient.connect(url, function(err, db) {
+	if (err) throw err;
+	console.log("Database connected!");
+	mongo.db = db;
 });
 
-connection.connect(err => {
-	if (err) {
-		throw err;
-	}
-});
-
-module.exports = connection;
+module.exports = mongo;

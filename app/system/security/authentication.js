@@ -1,4 +1,4 @@
-const Person = require('../../models/person');
+const people = require('../../models/people');
 
 /*
 	https://github.com/expressjs/session
@@ -18,17 +18,17 @@ const authentication = {
 
 		// if user has changed, get new information
 		if (!currentUser || currentUser.uid !== uidHeader) {
+
 			req.session.user = undefined;
-			Person.select(uidHeader, person => {
-				person.length ? callback(req.session.user = person[0]) : Person.insert(
-					{
-						uid: uidHeader,
-						firstName: req.header('firstname'),
-						lastName: req.header('lastname'),
-						email: req.header('email'),
-					}, person => callback(req.session.user = person)
-				)
-			});
+
+			const headerPerson = {
+				uid: uidHeader,
+				firstName: req.header('firstname'),
+				lastName: req.header('lastname'),
+				email: req.header('email'),
+			};
+
+			people.replace(headerPerson, user => callback(req.session.user = user));
 		} else {
 			callback(req.session.user);
 		}

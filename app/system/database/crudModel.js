@@ -1,7 +1,4 @@
-const connection = require('./connection.js');
-const queryResults = require('./queryResults');
-const convertKeys = require('convert-keys');
-const snakeCase = require('lodash.snakecase');
+const mongo = require('./connection.js');
 
 
 /** generic crud for any table
@@ -16,19 +13,59 @@ const snakeCase = require('lodash.snakecase');
  pickQueries.report = (param1, param2, callback) => connection.query('DO SOME SQL FANCY ? STUFF ? HERE ?', [param1, param2, param2], callback);
  module.exports = pickQueries;
  */
-module.exports = (tableName, idField, insertIdField) => {
+
+/**
+ * create callback function for mongo results to callback to passed in callback the results
+ *
+ * @param callback where to send results
+ * @return {function(*=, *=)} takes err and res and sends res back to callback if there was no err
+ */
+function mongoErrorHandler(callback) {
+	return (err, res) => {
+		if (err) {
+			throw err;
+		}
+		if (callback) {
+			callback(res);
+		}
+	}
+}
+
+/**
+ * create an id object for the data
+ *
+ * @param idField name of the field that is the id for the data, or falsey for _id
+ * @param data the data object containing the data (including the id field)
+ * @return {{}} new object with id in it
+ */
+function createIdObject(idField, data) {
+	const field = idField ? idField : '_id';
+	return {[field]: data[field]};
+}
+
+module.exports = (collection, idField) => {
+
 	const model = {
-		select: (id, callback) => connection.query(`SELECT * FROM ${tableName} WHERE ${snakeCase(idField)} = ?`, [id], queryResults.selectCallback(callback)),
+		insert: (record, callback) => mongo.db.collection(collection).insertOne(record, mongoErrorHandler(callback)),
 
-		insert: (data, callback) => connection.query(`INSERT INTO ${tableName} SET ?`, convertKeys.toSnake(data), queryResults.insertCallback(id => {data[insertIdField ? insertIdField : idField] = id; callback(data);})),
+		select: (query, callback) => mongo.db.collection(collection).find(query).toArray(mongoErrorHandler(callback)),
 
-		update: (data, callback) => connection.query(`UPDATE ${tableName} SET ? WHERE ${snakeCase(idField)} = ?`, [convertKeys.toSnake(data), data[idField]], queryResults.updateCallback(callback)),
+		update: (data, callback) => mongo.db.collection(collection).updateOne(createIdObject(idField, data), data, mongoErrorHandler(callback)),
 
-		delete: (id, callback) => connection.query(`DELETE FROM ${tableName} WHERE ${snakeCase(idField)} = ?`, id, queryResults.deleteCallback(callback)),
-
+		delete: (data, callback) => mongo.db.collection(collection).deleteOne(createIdObject(idField, data), data, mongoErrorHandler(callback)),
 	};
 
-	model.replace = (data, callback) => model.update(data, numUpdated => numUpdated ? callback(data) : model.insert(data, callback));
+	// search for the user, update if exists, insert if not; had tried checking update count, but then auto created _id field is not included
+	model.replace = (data, callback) =>
+		model.select(createIdObject(idField, data), user => {
+			if (user && user.length) {
+				// put id in to record (whole reason for doing "select" at the front in the first place instead of update/count
+				model.update(data, res => callback(Object.assign({_id: user[0]._id}, data)));
+			} else {
+				// insert auto puts id in to data passed in to it so just return that object
+				model.insert(data, res => callback(data));
+			}
+		});
 
 	return model;
 };

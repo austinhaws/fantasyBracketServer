@@ -59,8 +59,10 @@ module.exports = (collection, idField) => {
 	model.replace = (data, callback) =>
 		model.select(data, user => {
 			if (user && user.length) {
+				// copy in to existing db object so that fields not passed in to data are not changed
+				const updateData = Object.assign(user[0], data);
 				// put id in to record (whole reason for doing "select" at the front in the first place instead of update/count
-				model.update(data, res => callback(Object.assign({_id: user[0]._id}, data)));
+				model.update(updateData, res => callback(updateData));
 			} else {
 				// insert auto puts id in to data passed in to it so just return that object
 				model.insert(data, res => callback(data));

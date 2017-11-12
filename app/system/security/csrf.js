@@ -10,6 +10,8 @@ module.exports = {
 		if (!csrf || req.body[csrf.csrfName] !== csrf.csrfToken) {
 			throw 'Invalid csrf token';
 		}
+		// don't pass csrf forward so that it doesn't end up in mongo store
+		delete req.body[csrf.csrfName];
 	},
 	getCsrf: (req, callback) => {
 		authentication.currentUser(req, person => {

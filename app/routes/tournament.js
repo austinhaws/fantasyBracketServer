@@ -5,11 +5,5 @@ module.exports = function (router) {
 
 	router.route('/tournament/current').get((req, res) => tournaments.select('2018', tournaments => res.json(tournaments[0])));
 
-	router.route('/tournament/save').post((req, res) => tournaments.update({
-			year: req.body.year,
-			data: req.body.data,
-			tournament_pk: req.body.tournamentPk,
-		}, () => jsonMessage.success(res)));
-
-
+	router.route('/tournament/save').post((req, res) => tournaments.update(req.body, () => jsonMessage.success(res)));
 };

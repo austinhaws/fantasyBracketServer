@@ -16,13 +16,14 @@ module.exports = {
 	getCsrf: (req, callback) => {
 		authentication.currentUser(req, person => {
 			const csrf = req.session.csrf;
-			if (!csrf || csrf.personPk !== person.personPk) {
+			if (!csrf || csrf.uid !== person.uid) {
 				req.session.csrf = {
-					personPk: person.personPk,
-					csrfToken: guid.create(),
+					uid: person.uid,
+					csrfToken: guid.create().value,
 					csrfName: 'fantasyCsrf',
 				};
 			}
+			req.session.save();
 			callback(req.session.csrf);
 		});
 	}

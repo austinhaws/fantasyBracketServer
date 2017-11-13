@@ -1,4 +1,3 @@
-const cookieParser = require('cookie-parser')
 const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
@@ -9,15 +8,18 @@ const csrf = require('./app/system/security/csrf');
 const cors = require('cors');
 
 app.use(helmet());
-app.use(session({secret: 'fantasybracketrockslikecasey!', resave: true, saveUninitialized: true,}));
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
-app.use(cookieParser());
+// secure false for session since it's not https
+app.use(session({secret: 'fantasybracketrockslikecasey!', resave: true, saveUninitialized: true, secure: false, httpOnly: false, domain: '*'}));
+app.use(bodyParser.urlencoded({extended: true, limit: '50mb'}));
+app.use(bodyParser.json({limit: '50mb'}));
 
 
-// use it before all route definitions
-app.use(cors({origin: '*'}));
-
+// use cors before all route definitions
+app.use(cors({
+	origin: (origin, callback) => callback(false, true),
+	credentials: true,
+	optionsSuccessStatus: 204,
+}));
 
 const router = express.Router();
 

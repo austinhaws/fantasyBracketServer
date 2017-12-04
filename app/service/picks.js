@@ -1,3 +1,41 @@
+/**
+ * loop through rounds for a teamIds possible games and callback to set what to do at that game
+ *
+ * @param toGame loop until get to this game
+ * @param conferenceStart at which conference to start looping
+ * @param roundStart at which round to start looping
+ * @param gameNumberStart at which game number to start looping
+ * @param setCallback at each game, call this funciton
+ */
+function applyPick(toGame, conferenceStart, roundStart, gameNumberStart, setCallback) {
+	while (conferenceStart !== toGame.conference || roundStart !== toGame.round) {
+		// advance to next round
+		roundStart++;
+		if (roundStart >= 6) {
+			// finals, so change conference and round
+
+			// conferences go to specific games in first round of finals
+			switch (conferenceStart) {
+				case 'topLeft':
+				case 'bottomLeft':
+					gameNumberStart = 0;
+					break;
+				case 'topRight':
+				case 'bottomRight':
+					gameNumberStart = 1;
+					break;
+			}
+			conferenceStart = 'finals';
+			roundStart = 1;
+		} else {
+			gameNumberStart = Math.floor(gameNumberStart / 2);
+		}
+
+		// assign winner to the dragged team
+		setCallback(conferenceStart, roundStart, gameNumberStart);
+	}
+}
+
 module.exports = {
 
 	/**
@@ -15,7 +53,7 @@ module.exports = {
 		let conference = false;
 		let gameNumber = false;
 		let round = 1;
-		// find soruce conference and position
+		// find source conference and position
 		['topLeft', 'bottomLeft', 'topRight', 'bottomRight']
 			.forEach(k => {
 				const round1 = userPicks[k].rounds[1];
@@ -27,32 +65,22 @@ module.exports = {
 				});
 			});
 
-		// start at srouceconference.round1 and pick dragged team winning up through the toGame conference/round
-		while (conference !== toGame.conference || round !== toGame.round) {
-			// advance to next round
-			round++;
-			if (round >= 6) {
-				// finals, so change conference and round
-
-				// conferences go to specific games in first round of finals
-				switch (conference) {
-					case 'topLeft':
-					case 'bottomLeft':
-						gameNumber = 0;
-						break;
-					case 'topRight':
-					case 'bottomRight':
-						gameNumber = 1;
-						break;
-				}
-				conference = 'finals';
-				round = 1;
-			} else {
-				gameNumber = Math.floor(gameNumber / 2);
-			}
-
-			// assign winner to the dragged team
+		// pick the team all the way through the target game
+		let deadTeamId = false;
+		applyPick(toGame, conference, round, gameNumber, (conference, round, gameNumber) => {
+			deadTeamId = userPicks[conference].rounds[round][gameNumber].winningTeamId;
 			userPicks[conference].rounds[round][gameNumber].winningTeamId = teamId;
-		}
+		});
+
+		// unset the originally picked team from the target game on through the finals since they are no longer valid
+		applyPick({
+			conference: 'finals',
+			round: 2,
+			gameNumber: 0,
+		}, toGame.conference, toGame.round, toGame.gameNumber, (conference, round, gameNumber) => {
+			if (userPicks[conference].rounds[round][gameNumber].winningTeamId === deadTeamId) {
+				userPicks[conference].rounds[round][gameNumber].winningTeamId = false;
+			}
+		});
 	}
 };

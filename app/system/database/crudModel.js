@@ -65,7 +65,7 @@ module.exports = (collection, idField) => {
 				model.update(updateData, res => callback(updateData));
 			} else {
 				// insert auto puts id in to data passed in to it so just return that object
-				model.insert(data, res => callback(data));
+				model.insert(data, () => callback(data));
 			}
 		});
 

@@ -1,3 +1,8 @@
+const picksModel = require('../models/picks');
+const tournaments = require('../models/tournaments');
+const clone = require('clone');
+const conferences = require('../enums/conferences');
+
 /**
  * loop through rounds for a teamIds possible games and callback to set what to do at that game
  *
@@ -16,12 +21,12 @@ function applyPick(toGame, conferenceStart, roundStart, gameNumberStart, setCall
 
 			// conferences go to specific games in first round of finals
 			switch (conferenceStart) {
-				case 'topLeft':
-				case 'bottomLeft':
+				case conferences.TOP_LEFT:
+				case conferences.BOTTOM_LEFT:
 					gameNumberStart = 0;
 					break;
-				case 'topRight':
-				case 'bottomRight':
+				case conferences.TOP_RIGHT:
+				case conferences.BOTTOM_RIGHT:
 					gameNumberStart = 1;
 					break;
 			}
@@ -54,7 +59,7 @@ module.exports = {
 		let gameNumber = false;
 		let round = 1;
 		// find source conference and position
-		['topLeft', 'bottomLeft', 'topRight', 'bottomRight']
+		Object.values(conferences)
 			.forEach(k => {
 				const round1 = userPicks[k].rounds[1];
 				round1.forEach((team, i) => {
@@ -80,6 +85,46 @@ module.exports = {
 		}, toGame.conference, toGame.round, toGame.gameNumber, (conference, round, gameNumber) => {
 			if (userPicks[conference].rounds[round][gameNumber].winningTeamId === deadTeamId) {
 				userPicks[conference].rounds[round][gameNumber].winningTeamId = false;
+			}
+		});
+	},
+
+	getUserPicks(user, res) {
+		function setPicksResponse(res, picks) {
+			res.json(picks);
+		}
+
+		picksModel.select(user.uid, picks => {
+			if (picks.length) {
+				setPicksResponse(res, picks[0]);
+			} else {
+				// load the tournament
+				tournaments.select('2018', tournamentRecords => {
+					const tournament = tournamentRecords[0];
+
+					// copy the tournament to get the base layout of the whole bracket and the starting teams
+					const userPicks = clone(tournament.conferences);
+					userPicks.uid = user.uid;
+
+					// set each game of the bracket to be default pick data
+					Object.values(conferences).forEach(conference => {
+						// loop through each round of the conference
+						[...Array(conference === conferences.FINALS ? 3 : 6).keys()].forEach(round => {
+							// first round of non-conference finals doesn't change
+							if (round > 1 || (round >= 1 && conference === conferences.FINALS)) {
+								// clear all pick items
+								userPicks[conference].rounds[round] = userPicks[conference].rounds[round].map(() => { return {
+									topTeamId: false,
+									bottomTeamId: false,
+									winningTeamId: false,
+								};})
+							}
+						})
+					});
+
+					// save and return the result
+					picksModel.insert(userPicks, () => setPicksResponse(res, userPicks));
+				})
 			}
 		});
 	}

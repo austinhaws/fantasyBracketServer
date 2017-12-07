@@ -6,7 +6,7 @@ module.exports = function (router) {
 
 	router.route('/person/current').get((req, res) => authentication.currentUser(req, user => res.json(user)));
 
-	router.route('/person/picks').get((req, res) => authentication.currentUser(req, user => picks.select(user.uid, picks => res.json(picks.length ? picks[0] : '{}'))));
+	router.route('/person/picks').get((req, res) => authentication.currentUser(req, user => pickService.getUserPicks(user, res)));
 
 	router.route('/person/pick').post((req, res) => authentication.currentUser(req, user => picks.select(user.uid, userPicks => {
 		if (!userPicks.length) {

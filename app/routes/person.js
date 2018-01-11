@@ -1,6 +1,7 @@
 const picks = require('../models/picks');
 const authentication = require('../system/security/authentication');
 const pickService = require('../service/picks');
+const people = require('../models/people');
 
 module.exports = function (router) {
 
@@ -18,4 +19,6 @@ module.exports = function (router) {
 			picks.update(userPick, () => res.json(userPick));
 		}
 	})));
+
+	router.route('/person/all').get((req, res) => people.selectAll(people => res.json(people)));
 };

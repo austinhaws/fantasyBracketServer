@@ -53,6 +53,8 @@ module.exports = (collection, idField) => {
 		update: (data, callback) => mongo.db.collection(collection).updateOne(createIdObject(idField, data), data, mongoErrorHandler(callback)),
 
 		delete: (data, callback) => mongo.db.collection(collection).deleteOne(createIdObject(idField, data), data, mongoErrorHandler(callback)),
+
+		selectAll: callback => mongo.db.collection(collection).find().toArray(mongoErrorHandler(callback)),
 	};
 
 	// search for the user, update if exists, insert if not; had tried checking update count, but then auto created _id field is not included

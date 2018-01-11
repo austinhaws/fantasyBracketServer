@@ -127,5 +127,9 @@ module.exports = {
 				})
 			}
 		});
+	},
+
+	getAllPicks: res => {
+		picksModel.selectAll(picks => res.json(picks));
 	}
 };
